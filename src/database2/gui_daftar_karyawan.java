@@ -16,8 +16,6 @@ import com.mysql.jdbc.PreparedStatement;
 import com.mysql.jdbc.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -32,30 +30,39 @@ public class gui_daftar_karyawan extends javax.swing.JFrame {
 
     public gui_daftar_karyawan() {
         initComponents();
+        TabelKaryawan = (DefaultTableModel) TabelDatakaryawan.getModel();
+        TabelDatakaryawan.setModel(TabelKaryawan);
+        
+        LoadData();
     }
 
-    public void LoadData() throws SQLException {
+    public void LoadData() {
         try {
             Connection conn = (Connection) DBConnection.getConn();
             Statement stmt = (Statement) conn.createStatement();
 
-            String sql = "SELEC * FROM karyawan";
+            String sql = "SELECT * FROM karyawan";
             ResultSet r = stmt.executeQuery(sql);
 
             while (r.next()) {
-                Object [] obj = new Object[6];
-                obj[0] = r.getString("nama_karyawan");
-                obj[1] = r.getString("tempat_lahir");
-                obj[2] = r.getString("tgl_lahir");
-                obj[3] = r.getString("alamat");
-                obj[4] = r.getString("pendidikan");
-                obj[5] = r.getString("status");
+                Object [] obj = new Object[7];
+                obj[0] = r.getString(1);
+                obj[1] = r.getString("nama_karyawan");
+                obj[2] = r.getString("tempat_lahir");
+                obj[3] = r.getString("tgl_lahir");
+                obj[4] = r.getString("alamat");
+                obj[5] = r.getString("pendidikan");
+                obj[6] = r.getString("status");
 
-//                TabelDatakaryawan.addRow(obj);
-            }catch (SQLException e) {
-                System.out.println("Terjadi Error");
+                TabelKaryawan.addRow(obj);
+                TabelKaryawan.fireTableDataChanged();
             }
-
+            TabelKaryawan.fireTableDataChanged();
+            
+            r.close();
+            stmt.close();
+        }catch (SQLException e) {
+            System.out.println("Terjadi Error");
         }
     }
 
@@ -84,6 +91,7 @@ public class gui_daftar_karyawan extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         TabelDatakaryawan = new javax.swing.JTable();
+        Hapus = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -157,6 +165,13 @@ public class gui_daftar_karyawan extends javax.swing.JFrame {
         ));
         jScrollPane1.setViewportView(TabelDatakaryawan);
 
+        Hapus.setText("Hapus");
+        Hapus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                HapusActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -190,6 +205,8 @@ public class gui_daftar_karyawan extends javax.swing.JFrame {
                                 .addComponent(status, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addContainerGap()))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(Hapus)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jButton1)
                         .addContainerGap())))
             .addGroup(layout.createSequentialGroup()
@@ -229,7 +246,9 @@ public class gui_daftar_karyawan extends javax.swing.JFrame {
                             .addComponent(jLabel7)
                             .addComponent(status, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addGap(18, 18, 18)
-                .addComponent(jButton1)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton1)
+                    .addComponent(Hapus))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(306, Short.MAX_VALUE))
@@ -278,8 +297,29 @@ public class gui_daftar_karyawan extends javax.swing.JFrame {
 
             p.executeUpdate();
             p.close();
+        }catch(SQLException e) {
+            System.out.println("Terjadi Error");
         }
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void HapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_HapusActionPerformed
+       try {
+            Connection conn = (Connection) DBConnection.getConn();
+
+            int column = 0;
+            int row = TabelDatakaryawan.getSelectedRow();
+            String value = TabelDatakaryawan.getModel().getValueAt(row, column).toString();
+
+            String sql = String.format("DELETE FROM karyawan WHERE id_karyawan=%s", value);
+            Statement stmt = (Statement) conn.createStatement();
+
+            stmt.executeUpdate(sql);
+//            System.out.println(sql);
+
+        }catch(SQLException e) {
+            System.out.println("Terjadi Error");
+        }
+    }//GEN-LAST:event_HapusActionPerformed
 
     /**
     * @param args the command line arguments
@@ -294,6 +334,7 @@ public class gui_daftar_karyawan extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField Alamat;
+    private javax.swing.JButton Hapus;
     private javax.swing.JTextField NamaKaryawan;
     private javax.swing.JTable TabelDatakaryawan;
     private javax.swing.JTextField TanggalLahir;
